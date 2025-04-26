@@ -1,79 +1,77 @@
 #include<bits/stdc++.h>
-
 using namespace std;
 
-const int INF = numeric_limits<int>::max();
 
-struct Edge {
-    int node, weight;
-    bool operator>(const Edge &other) const {
-        return weight > other.weight;
-    }
-};
+vector<int> Djistra(vector<vector<pair<int,int>>> &vec  , int start){
+	vector<int>dist(vec.size() , INT_MAX);
+	vector<int>visited(vec.size() , false);
+	priority_queue< pair<int,int> , vector<pair<int,int>> , greater<pair<int,int>>> pq; 
+	
+	pq.push({0,start});
+	dist[start] = 0;
+	
+	while(!pq.empty()){
+		int u = pq.top().second;
+		pq.pop();
+		visited[u] = true;
+		for(auto data: vec[u]){
+			int v = data.first;
+			int vW = data.second;
+			int NewDist = dist[u] + vW;
+			if(!visited[v] && NewDist < dist[v]){
+				dist[v] = NewDist;
+				pq.push({NewDist , v});
+			}
+		}
+	}
+	
 
-void dijkstra(int start, vector<vector<Edge>> &graph, vector<int> &dist) {
-    priority_queue<Edge, vector<Edge>, greater<Edge>> pq;
-    dist[start] = 0;
-    pq.push({start, 0});
-
-    while (!pq.empty()) {
-        Edge current = pq.top();
-        pq.pop();
-
-        int u = current.node, d = current.weight;
-        if (d > dist[u]) continue;
-
-        for (const Edge &neighbor : graph[u]) {
-            int v = neighbor.node, weight = neighbor.weight;
-            if (dist[v] > d + weight) {
-                dist[v] = d + weight;
-                pq.push({v, dist[v]});
-            }
-        }
-    }
+	return dist;
 }
 
-int main() {
-    int f, n;
-    cin >> f >> n;
-
-    vector<int> hospitals(f);
-    for (int i = 0; i < f; i++) {
-        cin >> hospitals[i];
-        hospitals[i]--; // ??????????? 0-based index
-    }
-
-    vector<vector<Edge>> graph(101); // ????????????????????? 100
-    for (int i = 0; i < n; i++) {
-        int x, y, r;
-        cin >> x >> y >> r;
-        x--, y--; // ??????????? 0-based index
-        graph[x].push_back({y, r});
-        graph[y].push_back({x, r});
-    }
-
-    // ??????????????????????????????????????????????
-    vector<int> minDistance(101, INF);
-    for (int hospital : hospitals) {
-        vector<int> dist(101, INF);
-        dijkstra(hospital, graph, dist);
-        for (int i = 0; i < 101; i++) {
-            minDistance[i] = min(minDistance[i], dist[i]);
-        }
-    }
-
-    // ??????????????????????????????????????????????????????
-    int bestDistrict = -1, maxDist = -1;
-    for (int i = 0; i < 101; i++) {
-        if (find(hospitals.begin(), hospitals.end(), i) != hospitals.end()) continue; // ?????????????????????????
-        if (minDistance[i] == INF) continue; // ?????????????????????????
-        if (minDistance[i] > maxDist || (minDistance[i] == maxDist && i < bestDistrict)) {
-            maxDist = minDistance[i];
-            bestDistrict = i;
-        }
-    }
-
-    cout << bestDistrict + 1 << endl; // ???????????? 1-based index
-    return 0;
+int main(){
+	int f, n;
+	cin>> f >> n;
+	vector<int>hospital(f);
+	for(int i =  0 ; i < f ; i++ ){
+		cin>>hospital[i];
+	}
+	vector<vector<pair<int,int>>>vec(n+1);
+	for(int i =  0 ; i  < n ; i++){
+		int x , y ,w;
+		cin>> x >> y >> w;
+		vec[x].push_back({y,w});
+		vec[y].push_back({x,w});
+	}
+	vector<int>result(n+1, INT_MAX);
+	int MAX = INT_MIN;
+	int index=  0;
+	for(int i = 0 ; i < f ; i++){
+	 	vector<int>dist = Djistra(vec , hospital[i]);
+	 	for(int i = 1 ; i < dist.size() ;i++){
+	 		if(dist[i]<result[i]){
+	 			result[i]=dist[i];
+			}
+		 }
+	}
+	for(int i =  1 ; i < result.size() ; i++){
+	//	cout<<result[i]<<" ";
+		if(result[i] > MAX){
+			MAX = result[i];
+			index = i;
+		}
+		
+	}
+	cout<< index;
+	
+	return 0;
 }
-
+/*
+2 6
+2 5
+1 2 10
+2 3 10
+3 4 10
+4 5 10
+5 6 10
+6 1 10*/
